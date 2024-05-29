@@ -1,0 +1,181 @@
+1 Consoder the following tables Create the tables and insert sufficient records. Esecute the queries that follow:
+
+SAILORS(s id, name, rating, age
+
+BOATS(b id, b name,color) RESERVESės id, bid, day)
+
+L id, bid are primary keys of the tables SAILORS and BOATS
+
+id, bid together of the table RESERVES form the composite primary key.
+
+isid, b id are also the foreign keys references SAILORS and BOATS respectively.
+
+a) Find the color of boats reserved by Tarun
+
+b) Find the sailor id's and sailor names who have reserved boats on Monday
+
+c) List boat id's and boat names for "red" and "green" colors only
+
+d) Delete all the sailors information whose age is greater than 60
+
+2. Consider the following tables. Create the tables and insert sufficient records. Execute the queries that follow.
+
+Teacher (Tid, Name, Dept) Subject (Subno, Subtitle)
+
+Taught By Lid. Subno)
+
+iv. Student (Rolino, Sname, City)
+
+) Get the names of all the teachers of Physics" department who teach Thermodynamics
+
+a b) Rename the subject 'DBMS to RDBMS
+
+c) Find out all the students who stay in Kolkata' and whose rell number is between 20 and 25.
+
+d) Display all the students' information in descending order of their roll mimber who stay in 'Kolkata"
+
+
+
+-- Create SAILORS table
+CREATE TABLE SAILORS (
+    sid INT PRIMARY KEY,
+    name VARCHAR(50),
+    rating INT,
+    age INT
+);
+
+-- Create BOATS table
+CREATE TABLE BOATS (
+    bid INT PRIMARY KEY,
+    bname VARCHAR(50),
+    color VARCHAR(20)
+);
+
+-- Create RESERVES table
+CREATE TABLE RESERVES (
+    sid INT,
+    bid INT,
+    day VARCHAR(10),
+    PRIMARY KEY (sid, bid),
+    FOREIGN KEY (sid) REFERENCES SAILORS(sid),
+    FOREIGN KEY (bid) REFERENCES BOATS(bid)
+);
+
+-- Insert sample records into SAILORS table
+INSERT INTO SAILORS (sid, name, rating, age) VALUES
+(101, 'Tarun', 8, 35),
+(102, 'Ramesh', 7, 40),
+(103, 'Suresh', 6, 45),
+(104, 'Mohan', 9, 55);
+
+-- Insert sample records into BOATS table
+INSERT INTO BOATS (bid, bname, color) VALUES
+(201, 'Boat1', 'Red'),
+(202, 'Boat2', 'Green'),
+(203, 'Boat3', 'Blue'),
+(204, 'Boat4', 'Red');
+
+-- Insert sample records into RESERVES table
+INSERT INTO RESERVES (sid, bid, day) VALUES
+(101, 201, 'Monday'),
+(102, 202, 'Tuesday'),
+(103, 203, 'Monday'),
+(104, 204, 'Wednesday');
+
+
+
+-- Create Teacher table
+CREATE TABLE Teacher (
+    Tid INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Dept VARCHAR(50)
+);
+
+-- Create Subject table
+CREATE TABLE Subject (
+    Subno INT PRIMARY KEY,
+    Subtitle VARCHAR(50)
+);
+
+-- Create Taught_By table
+CREATE TABLE Taught_By (
+    Lid INT,
+    Subno INT,
+    PRIMARY KEY (Lid, Subno),
+    FOREIGN KEY (Lid) REFERENCES Teacher(Tid),
+    FOREIGN KEY (Subno) REFERENCES Subject(Subno)
+);
+
+-- Create Student table
+CREATE TABLE Student (
+    Rollno INT PRIMARY KEY,
+    Sname VARCHAR(50),
+    City VARCHAR(50)
+);
+
+-- Insert sample records into Teacher table
+INSERT INTO Teacher (Tid, Name, Dept) VALUES
+(1, 'John', 'Physics'),
+(2, 'Alice', 'Chemistry'),
+(3, 'Bob', 'Physics');
+
+-- Insert sample records into Subject table
+INSERT INTO Subject (Subno, Subtitle) VALUES
+(101, 'Thermodynamics'),
+(102, 'Quantum Mechanics'),
+(103, 'Organic Chemistry');
+
+-- Insert sample records into Taught_By table
+INSERT INTO Taught_By (Lid, Subno) VALUES
+(1, 101),
+(3, 101),
+(2, 103);
+
+-- Insert sample records into Student table
+INSERT INTO Student (Rollno, Sname, City) VALUES
+(1, 'Tom', 'Kolkata'),
+(2, 'Mary', 'Delhi'),
+(3, 'David', 'Kolkata'),
+(4, 'Emma', 'Kolkata');
+
+
+SELECT b.color
+FROM BOATS b
+JOIN RESERVES r ON b.bid = r.bid
+JOIN SAILORS s ON r.sid = s.sid
+WHERE s.name = 'Tarun';
+
+SELECT s.sid, s.name
+FROM SAILORS s
+JOIN RESERVES r ON s.sid = r.sid
+WHERE r.day = 'Monday';
+
+SELECT bid, bname
+FROM BOATS
+WHERE color IN ('Red', 'Green');
+
+DELETE FROM SAILORS
+WHERE age > 60;
+
+
+
+
+
+SELECT T.Name
+FROM Teacher T
+JOIN Taught_By TB ON T.Tid = TB.Lid
+JOIN Subject S ON TB.Subno = S.Subno
+WHERE T.Dept = 'Physics' AND S.Subtitle = 'Thermodynamics';
+
+UPDATE Subject
+SET Subtitle = 'RDBMS'
+WHERE Subtitle = 'DBMS';
+
+SELECT *
+FROM Student
+WHERE City = 'Kolkata' AND Rollno BETWEEN 20 AND 25;
+
+SELECT *
+FROM Student
+WHERE City = 'Kolkata'
+ORDER BY Rollno DESC;

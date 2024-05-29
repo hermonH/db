@@ -1,0 +1,87 @@
+1. Create the following tables.
+
+SALESPEOPLE (SNUM, SNAME, CITY, COMM) CUSTOMER (CNUM, CNAME CITY, RATING, SNUM) ORDERS (ONUM, AMT, ODATE, CNUM, SNUM)
+
+2. Create views that show
+
+a) All of the customers who have highest rating
+
+b) The number of salesperson in each city
+
+c) The average and total orders for each salesperson
+
+d) Each salesperson with multiple customers
+
+3. Create a view Salespeople Customer Orders containing the following columns Salespeople Customer Orders (SalespeopleName, CustomerName, OrderNumber)
+
+4. Create a view of SALESPEOPLE table considering only two fields, Le. SNUM and COMM Thorough this view someone can imert of modify commission values between Rs. 1000 and Rs. 2000
+
+
+
+
+
+CREATE TABLE SALESPEOPLE (
+    SNUM INT PRIMARY KEY,
+    SNAME VARCHAR(50),
+    CITY VARCHAR(50),
+    COMM DECIMAL(10, 2)
+);
+
+CREATE TABLE CUSTOMER (
+    CNUM INT PRIMARY KEY,
+    CNAME VARCHAR(50),
+    CITY VARCHAR(50),
+    RATING INT,
+    SNUM INT,
+    FOREIGN KEY (SNUM) REFERENCES SALESPEOPLE(SNUM)
+);
+
+CREATE TABLE ORDERS (
+    ONUM INT PRIMARY KEY,
+    AMT DECIMAL(10, 2),
+    ODATE DATE,
+    CNUM INT,
+    SNUM INT,
+    FOREIGN KEY (CNUM) REFERENCES CUSTOMER(CNUM),
+    FOREIGN KEY (SNUM) REFERENCES SALESPEOPLE(SNUM)
+);
+
+CREATE VIEW Customers_Highest_Rating AS
+SELECT *
+FROM CUSTOMER
+WHERE RATING = (SELECT MAX(RATING) FROM CUSTOMER);
+
+CREATE VIEW Salesperson_Count_By_City AS
+SELECT CITY, COUNT(*) AS Salesperson_Count
+FROM SALESPEOPLE
+GROUP BY CITY;
+
+CREATE VIEW Salesperson_Order_Stats AS
+SELECT SNUM,
+       AVG(AMT) AS Average_Order_Amount,
+       SUM(AMT) AS Total_Order_Amount
+FROM ORDERS
+GROUP BY SNUM;
+
+CREATE VIEW Salesperson_Multiple_Customers AS
+SELECT SNUM
+FROM CUSTOMER
+GROUP BY SNUM
+HAVING COUNT(*) > 1;
+
+
+CREATE VIEW Salespeople_Customer_Orders AS
+SELECT SP.SNAME AS SalespeopleName,
+       C.CNAME AS CustomerName,
+       O.ONUM AS OrderNumber
+FROM SALESPEOPLE SP
+JOIN CUSTOMER C ON SP.SNUM = C.SNUM
+JOIN ORDERS O ON C.CNUM = O.CNUM AND C.SNUM = O.SNUM;
+
+
+
+CREATE VIEW Salespeople_Commission_Updates AS
+SELECT SNUM, COMM
+FROM SALESPEOPLE
+WHERE COMM BETWEEN 1000 AND 2000;
+

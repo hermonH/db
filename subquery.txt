@@ -1,0 +1,124 @@
+ Use the EMP table given in your workspace execute the following queries.
+
+a) Display the name of employee who earns maximum salary.
+
+b) Display the name of employee who earns maximum salary whose job is salesman.
+
+c) Display the name of employee who earns minimum salary and whose job is clerk.
+
+d) Display the department whose average salary is maximum.
+
+e) List the name of the employee whose salary is more than 'TURNER'
+
+f) List the name of employee who joined after ALLEN
+
+g) Display the name of the department in which 'FORD works.
+
+h) Display the name of the department whose salary is maximum.
+
+i) Display the name of the city(location) in which 'SMITH' works.
+
+) Display the name of the city in which the manager works.
+
+k) Display the grade of the employee named "MARTIN'
+
+1) List the employees who earns more than every employee in 'DALLAS'
+
+m) Display the name of the department which has no employee.
+
+n) List the name of the employee who joined in the same date of ADAMS
+
+o) List the name of the department who gets commission..
+
+p) List the employees who earn the lowest salary in their respective department.
+
+
+
+
+SELECT ENAME
+FROM EMP
+WHERE SAL = (SELECT MAX(SAL) FROM EMP);
+
+SELECT ENAME
+FROM EMP
+WHERE JOB = 'SALESMAN'
+AND SAL = (SELECT MAX(SAL) FROM EMP WHERE JOB = 'SALESMAN');
+
+SELECT ENAME
+FROM EMP
+WHERE JOB = 'CLERK'
+AND SAL = (SELECT MIN(SAL) FROM EMP WHERE JOB = 'CLERK');
+
+SELECT DEPTNO
+FROM (
+    SELECT DEPTNO, AVG(SAL) AS AVG_SAL
+    FROM EMP
+    GROUP BY DEPTNO
+    ORDER BY AVG_SAL DESC
+)
+WHERE ROWNUM = 1;
+
+SELECT ENAME
+FROM EMP
+WHERE SAL > (SELECT SAL FROM EMP WHERE ENAME = 'TURNER');
+
+SELECT ENAME
+FROM EMP
+WHERE HIREDATE > (SELECT HIREDATE FROM EMP WHERE ENAME = 'ALLEN');
+
+SELECT D.DNAME
+FROM EMP E
+JOIN DEPT D ON E.DEPTNO = D.DEPTNO
+WHERE E.ENAME = 'FORD';
+
+SELECT D.DNAME
+FROM (
+    SELECT DEPTNO, SUM(SAL) AS TOTAL_SAL
+    FROM EMP
+    GROUP BY DEPTNO
+    ORDER BY TOTAL_SAL DESC
+)
+JOIN DEPT D ON D.DEPTNO = DEPTNO
+WHERE ROWNUM = 1;
+
+SELECT D.LOC
+FROM EMP E
+JOIN DEPT D ON E.DEPTNO = D.DEPTNO
+WHERE E.ENAME = 'SMITH';
+
+SELECT D.LOC
+FROM EMP E
+JOIN DEPT D ON E.DEPTNO = D.DEPTNO
+WHERE E.JOB = 'MANAGER';
+
+SELECT GRADE
+FROM EMP
+WHERE ENAME = 'MARTIN';
+
+SELECT ENAME
+FROM EMP
+WHERE SAL > ALL (SELECT SAL FROM EMP WHERE LOC = 'DALLAS');
+
+SELECT DNAME
+FROM DEPT
+WHERE DEPTNO NOT IN (SELECT DEPTNO FROM EMP);
+
+SELECT ENAME
+FROM EMP
+WHERE HIREDATE = (SELECT HIREDATE FROM EMP WHERE ENAME = 'ADAMS');
+
+
+
+SELECT DISTINCT D.DNAME
+FROM DEPT D
+JOIN EMP E ON D.DEPTNO = E.DEPTNO
+WHERE E.COMM IS NOT NULL;
+
+
+
+SELECT ENAME
+FROM (
+    SELECT ENAME, RANK() OVER (PARTITION BY DEPTNO ORDER BY SAL) AS rnk
+    FROM EMP
+)
+WHERE rnk = 1;

@@ -1,0 +1,56 @@
+1. Create a table "Employeel" with attributes EID, ENAME, CITY, DESIGNATION, SALARY PERKS and insert data for at least three employees at first. Write the following using triggers.
+
+a) Update the Salary column of Employeel table before inserting any record in Employeel table. The SALARY will be deducted by Rs.300/- when the PERKS exceeds Rs. 500/-.
+CODE:
+
+CREATE OR REPLACE TRIGGER update_salary_trigger
+BEFORE INSERT ON Employeel
+FOR EACH ROW
+BEGIN
+    IF :NEW.perks > 500 THEN
+        :NEW.salary := :NEW.salary - 300;
+    END IF;
+END;
+/
+
+b) Modify the salary of Employee table before updating the record of the EMPLOYEE table. If the SALARY is less than and equal to Rs. 500/-, then set it to Rs. 10,000/-. Otherwise, set salary to Rs. 15,000/-
+CODE:
+
+CREATE OR REPLACE TRIGGER modify_salary_trigger
+BEFORE UPDATE ON Employeel
+FOR EACH ROW
+BEGIN
+    IF :NEW.salary <= 500 THEN
+        :NEW.salary := 10000;
+    ELSE
+        :NEW.salary := 15000;
+    END IF;
+END;
+/
+
+c) Create two tables "EMP" and "EMP BACKUP" having same attributes. The attributes are empid, ename, salary. Write a program using trigger in such a way that whenever a row will be inserted in "EMP" table, a copy of the row will also be inserted in "EMP_BACKUP" at the same time.
+CODE:
+
+-- Create EMP table
+CREATE TABLE EMP (
+    empid NUMBER(5),
+    ename VARCHAR2(50),
+    salary NUMBER(10,2)
+);
+
+-- Create EMP_BACKUP table with the same structure
+CREATE TABLE EMP_BACKUP (
+    empid NUMBER(5),
+    ename VARCHAR2(50),
+    salary NUMBER(10,2)
+);
+
+-- Create trigger to insert into EMP_BACKUP after insert into EMP
+CREATE OR REPLACE TRIGGER insert_into_emp_backup
+AFTER INSERT ON EMP
+FOR EACH ROW
+BEGIN
+    INSERT INTO EMP_BACKUP (empid, ename, salary)
+    VALUES (:NEW.empid, :NEW.ename, :NEW.salary);
+END;
+/

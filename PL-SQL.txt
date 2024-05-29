@@ -1,0 +1,120 @@
+Write the following in PL/SQLwith corresponding Outputs for the following:
+a) Accept an account number if the account balance is less than the minimum balance then Rs. 100/-has to be deducted from the balance. 
+
+b) Find the Ist three characters of the employee name who were hired in the year 1981. Display the result with ename as nickname and the other columns too.
+
+c) Find the employees from the emp table whose salary are among the top seven.
+
+d) The office at Chicago has decided to give a 20% bonus to all its salesman whose salaries are
+<=15000. Populate the bonus table with all such records. 
+
+e) For the Boston office, two employees were recruited one of grade2 and one of grades at the lowest remuneration possible . Insert 2 such records in this table.
+ 
+f) There was a hike in salary of all employees of the company. For
+
+1. grade 1:-15%, 
+2. 2. grade 2:-12%,
+
+3. grade 3:-10%,
+
+4. grade 4-10% and
+5.  grade 5:-5%.
+
+g) Update the employees' records. Also store the old information and the date on which his/her salaries changed.
+
+
+
+
+
+
+
+
+CODE:
+
+-- a) Accept an account number if the account balance is less than the minimum balance then Rs. 100/-has to be deducted from the balance.
+DECLARE
+    v_account_number NUMBER;
+    v_balance NUMBER;
+    v_minimum_balance CONSTANT NUMBER := 1000;
+BEGIN
+    -- Accept account number
+    v_account_number := &account_number;
+
+    -- Retrieve balance for the given account number
+    SELECT balance INTO v_balance FROM accounts WHERE account_number = v_account_number;
+
+    -- Check if balance is less than minimum balance
+    IF v_balance < v_minimum_balance THEN
+        -- Deduct Rs. 100 from balance
+        UPDATE accounts SET balance = balance - 100 WHERE account_number = v_account_number;
+        DBMS_OUTPUT.PUT_LINE('Account balance was below minimum balance. Rs. 100 deducted from the balance.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Account balance is sufficient.');
+    END IF;
+END;
+/
+
+-- b) Find the first three characters of the employee name who were hired in the year 1981. Display the result with ename as nickname and the other columns too.
+SELECT SUBSTR(ename, 1, 3) AS nickname, empno, ename, job, hiredate, sal, comm, deptno
+FROM emp
+WHERE EXTRACT(YEAR FROM hiredate) = 1981;
+
+-- c) Find the employees from the emp table whose salary are among the top seven.
+SELECT *
+FROM (
+    SELECT empno, ename, job, hiredate, sal, comm, deptno,
+           DENSE_RANK() OVER (ORDER BY sal DESC) AS salary_rank
+    FROM emp
+)
+WHERE salary_rank <= 7;
+
+-- d) The office at Chicago has decided to give a 20% bonus to all its salesman whose salaries are <=15000. Populate the bonus table with all such records.
+INSERT INTO bonus (empno, ename, job, salary, bonus_amount)
+SELECT empno, ename, job, sal, sal * 0.20
+FROM emp
+WHERE job = 'SALESMAN' AND sal <= 15000;
+
+-- e) For the Boston office, two employees were recruited one of grade2 and one of grades at the lowest remuneration possible . Insert 2 such records in this table.
+INSERT INTO employees (empno, ename, job, sal, deptno, grade)
+VALUES (emp_seq.NEXTVAL, 'John Doe', 'CLERK', 2000, 20, 2);
+
+INSERT INTO employees (empno, ename, job, sal, deptno, grade)
+VALUES (emp_seq.NEXTVAL, 'Jane Smith', 'MANAGER', 5000, 20, 1);
+
+-- f) There was a hike in salary of all employees of the company.
+UPDATE emp
+SET sal = CASE 
+              WHEN grade = 1 THEN sal * 0.85
+              WHEN grade = 2 THEN sal * 0.88
+              WHEN grade = 3 THEN sal * 0.90
+              WHEN grade = 4 THEN sal * 0.90
+              WHEN grade = 5 THEN sal * 0.95
+              ELSE sal
+          END;
+
+-- g) Update the employees' records. Also store the old information and the date on which his/her salaries changed.
+DECLARE
+    v_old_salary NUMBER;
+BEGIN
+    FOR rec IN (SELECT empno, sal FROM emp) LOOP
+        -- Store old salary in a variable
+        v_old_salary := rec.sal;
+        
+        -- Update employee's salary
+        UPDATE emp
+        SET sal = CASE 
+                      WHEN grade = 1 THEN sal * 0.85
+                      WHEN grade = 2 THEN sal * 0.88
+                      WHEN grade = 3 THEN sal * 0.90
+                      WHEN grade = 4 THEN sal * 0.90
+                      WHEN grade = 5 THEN sal * 0.95
+                      ELSE sal
+                  END
+        WHERE empno = rec.empno;
+        
+        -- Insert into audit table
+        INSERT INTO salary_audit (empno, old_salary, new_salary, change_date)
+        VALUES (rec.empno, v_old_salary, rec.sal, SYSDATE);
+    END LOOP;
+END;
+/
